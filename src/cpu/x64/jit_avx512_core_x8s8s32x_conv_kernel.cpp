@@ -792,6 +792,8 @@ void _jit_avx512_core_x8s8s32x_fwd_kernel<Vmm>::generate() {
     int out_shift = jcp.typesize_out
             * (jcp.ur_w * jcp.oc_without_padding * jcp.ngroups);
     preamble();
+    bool with_quantization = attr_.post_ops_.find(primitive_kind::quantization) != -1;
+
 
     if (jcp.is_depthwise) {
         int idx = jcp.max_regs_ur - 1;
@@ -802,6 +804,7 @@ void _jit_avx512_core_x8s8s32x_fwd_kernel<Vmm>::generate() {
         // due to extra register used for shifts and compensations
         // and/or saturation, we increment by one more
         if (jcp.signed_input || jcp.with_input_zp || jcp.need_saturation) ++idx;
+        if (with_quantization) ++idx;
         assert(idx == ker_dw_reg_base_idx);
     }
 
